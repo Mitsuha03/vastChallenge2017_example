@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>VAST m2017 MINICHALLENGE</title>
+
+    <link rel="stylesheet" href="dc.css">
+</head>
+<body>
+    <h1>VAST 2017 Minichallenge</h1>
+
+    <div id="carType">
+        <strong>Car Type</strong>
+        <span class="reset" style="display: none;">Selected: 
+            <span class="filter" style="display: none;"></span>
+        </span>
+        <a class="reset" href="javascript:carTypeChart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
+        <div class="clearfix"></div>
+    </div>
+
+    <div id="gateName">
+        <strong>Gate Name</strong>
+        <span class="reset" style="display: none;">Selected: 
+            <span class="filter" style="display: none;"></span>
+        </span>
+        <a class="reset" href="javascript:gateNameChart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
+        <div class="clearfix"></div>
+    </div>
+    <div>
+        <div class="dc-data-count">
+            <span class="filter-count"></span> selected out of <span class="total-count"></span> records | <a
+                href="javascript:dc.filterAll(); dc.renderAll();">Reset All</a>
+        </div>
+    </div>
+    <table class="table table-hover dc-data-table">
+    </table>
+    <div>
+
+    </div>
+
+    <script src="crossfilter.js"></script>
+    <script src="d3.js"></script>
+    <script src="dc.js"></script>
+
+    <script>
+
+        var carTypeChart = dc.rowChart("#carType");
+        var gateNameChart = dc.rowChart("#gateName");
+        var visCount = dc.dataCount(".dc-data-count");
+        var visTable = dc.dataTable(".dc-data-table")
+
+        d3.csv("Lekagul_slice.csv", function (err, data){
+            //Timestamp,car-id,car-type,gate-name
+            //2016-05-02 18:05:34,20161602051605-625,2P,camping7
+            //2016-05-02 18:09:13,20160902060913-100,2,entrance3
+            //2016-05-02 18:15:04,20161602051605-625,2P,general-gate6
+            //2016-05-02 18:18:28,20165902055925-718,1,general-gate2
+            //2016-05-02 18:19:46,20161602051605-625,2P,general-gate5
+            //2016-05-02 18:21:32,20165902055925-718,1,ranger-stop0
+
+            if (err) throw err;
+
+            data.forEach(function(d) {
+                d.Timestamp = new Date(d.Timestamp);
+            });
+
+            var ndx = crossfilter(data);
+            var all = ndx.groupAll();
+
+            var carTypeDim = ndx.dimension(function (d) { return d["car-type"]; });
+            var gateNameDim = ndx.dimension(function (d) { return d["gate-name"]; });
+            var dateDim = ndx.dimension(function (d) { return d["Timestamp"]; });
+
+            var carTypeGroup = carTypeDim.group();
+            var gateNameGroup = gateNameDim.group();
+            var dateGroup = dateDim.group();
+
+            carTypeChart
+                .dimension(carTypeDim)
+                .group(carTypeGroup)
+                .elasticX(true);
+
+            gateNameChart
+                .dimension(gateNameDim)
+                .group(gateNameGroup)
+                .data(function (group) { return group.top(10); });
+
+            visCount
+                .dimension(ndx)
+                .group(all);
+
+            visTable
+                .dimension(dateDim)
+                .group(dateGroup)
+                .columns([
+                    "Timestamp",
+                    "car-id",
+                    "car-type",
+                    "gate-name"
+                ]);
+
+            dc.renderAll();
+
+        });
+    </script>
+</body>
+</html>
