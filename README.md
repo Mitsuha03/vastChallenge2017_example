@@ -10,3 +10,4 @@ or
 
 and then open http://localhost:8080/minichallenge_1/
 
+![README01](img/README01.png)

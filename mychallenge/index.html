@@ -91,7 +91,10 @@
 
             visTable
                 .dimension(dateDim)
-                .group(dateGroup)
+                .group(function (d) {
+                    const format = d3.format('02d');
+                    return `${d.Timestamp.getFullYear()}/${format((d.Timestamp.getMonth() + 1))}`;
+                })
                 .columns([
                     "Timestamp",
                     "car-id",
